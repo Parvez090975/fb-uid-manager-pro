@@ -1,0 +1,8 @@
+# Facebook Access Tokens (Will be in server.js, this is optional)
+FB_ACCESS_TOKEN=optional
+
+# Encryption Key (Change this to something secure)
+ENCRYPTION_KEY=your-super-secret-encryption-key-min-32-chars
+
+# Server Port
+PORT=5000

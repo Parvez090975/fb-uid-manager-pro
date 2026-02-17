@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FB UID Manager Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background-color: #121212; 
+            color: #e0e0e0; 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+        .container { 
+            width: 100%; 
+            max-width: 650px; 
+            background: #1e1e1e; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8); 
+        }
+        
+        h3 { 
+            margin: 0 0 20px 0; 
+            color: #4267B2; 
+            text-align: center; 
+            border-bottom: 2px solid #333; 
+            padding-bottom: 15px; 
+        }
+
+        textarea { 
+            width: 100%; 
+            height: 100px; 
+            background: #252525; 
+            border: 1px solid #444; 
+            color: #fff; 
+            padding: 10px; 
+            outline: none; 
+            border-radius: 6px; 
+            font-family: monospace; 
+            font-size: 13px; 
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+        
+        .controls { 
+            display: grid; 
+            grid-template-columns: 1fr 2fr; 
+            gap: 10px; 
+            margin-bottom: 15px;
+        }
+        
+        .main-btn { 
+            padding: 10px; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border-radius: 5px; 
+            color: white; 
+            transition: 0.2s; 
+            font-size: 14px;
+        }
+        
+        .btn-clear { background: #d32f2f; }
+        .btn-clear:hover { background: #b71c1c; }
+        
+        .btn-process { background: #1976D2; }
+        .btn-process:hover { background: #1565c0; }
+
+        .save-bar { 
+            background: #222; 
+            padding: 12px; 
+            border-radius: 6px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border: 1px solid #333; 
+            margin-bottom: 15px;
+        }
+        
+        .btn-download { 
+            background: #ff9800; 
+            color: #000; 
+            border: none; 
+            padding: 8px 15px; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        
+        .btn-download:hover { background: #f57c00; }
+        
+        .result-container { 
+            height: 450px; 
+            overflow-y: auto; 
+            border: 1px solid #333; 
+            background: #121212; 
+            border-radius: 6px; 
+            padding: 10px;
+        }
+        
+        .result-row { 
+            display: grid; 
+            grid-template-columns: 1fr auto; 
+            gap: 10px; 
+            align-items: center; 
+            padding: 12px; 
+            border-bottom: 1px solid #2a2a2a; 
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        
+        .result-row:hover { background: #1a1a1a; }
+
+        .info-part { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 5px;
+        }
+        
+        .uid-link { 
+            color: #64b5f6; 
+            text-decoration: none; 
+            font-weight: bold; 
+            font-family: monospace; 
+            font-size: 14px; 
+        }
+        
+        .uid-link:hover { text-decoration: underline; }
+        
+        .user-name { 
+            font-size: 12px; 
+            color: #aaa; 
+        }
+        
+        .pass-display { 
+            font-size: 11px; 
+            color: #888; 
+            font-family: monospace; 
+        }
+
+        .btn-group { 
+            display: flex; 
+            gap: 5px; 
+            flex-wrap: wrap;
+        }
+        
+        .mini-btn { 
+            border: 1px solid #444; 
+            background: #333; 
+            color: #ccc; 
+            padding: 5px 8px; 
+            font-size: 11px; 
+            cursor: pointer; 
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        
+        .mini-btn:hover { background: #444; }
+        
+        .btn-delete { 
+            background: #c62828; 
+            color: white;
+            border-color: #c62828;
+        }
+        
+        .btn-delete:hover { background: #ad1457; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h3>🔥 FB UID Manager Pro</h3>
+    
+    <textarea id="inputData" placeholder="Paste UID|PASS here...
+Example:
+123456|password123
+789012|pass456"></textarea>
+
+    <div class="controls">
+        <button class="main-btn btn-clear" onclick="clearAll()">Clear</button>
+        <button class="main-btn btn-process" onclick="processList()">⚡ Process List</button>
+    </div>
+
+    <div class="save-bar">
+        <span style="color: #ccc; font-size: 13px;">Total Saved: <b id="count" style="color: #00e676; font-size: 16px;">0</b></span>
+        <button class="btn-download" onclick="downloadFile()">📥 Download .txt</button>
+    </div>
+
+    <div class="result-container" id="list"></div>
+</div>
+
+<script>
+    const API_URL = '/api';
+    
+    window.addEventListener('load', loadAllUsers);
+
+    async function loadAllUsers() {
+        try {
+            const response = await fetch(`${API_URL}/users`);
+            const users = await response.json();
+            const listDiv = document.getElementById('list');
+            listDiv.innerHTML = '';
+            
+            users.forEach(user => {
+                addRowFromData(user);
+            });
+            
+            document.getElementById('count').innerText = users.length;
+        } catch (error) {
+            console.error('Error loading users:', error);
+        }
+    }
+
+    function clearAll() {
+        if(confirm("Clear input box?")) {
+            document.getElementById('inputData').value = '';
+        }
+    }
+
+    async function processList() {
+        const raw = document.getElementById('inputData').value;
+        
+        if(!raw.trim()) return alert("Box is empty!");
+
+        const lines = raw.split('\n');
+        
+        for (let line of lines) {
+            if(line.trim()) {
+                let parts = line.split('|');
+                let uid = parts[0].trim();
+                let pass = parts.length > 1 ? parts[1].trim() : '';
+
+                if(/^\d+$/.test(uid)) {
+                    await fetchAndSaveUser(uid, pass);
+                }
+            }
+        }
+        
+        loadAllUsers();
+        document.getElementById('inputData').value = '';
+    }
+
+    async function fetchAndSaveUser(uid, pass) {
+        try {
+            const nameResponse = await fetch(`${API_URL}/fetch-name`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uid })
+            });
+            
+            const nameData = await nameResponse.json();
+            const name = nameData.name || `User_${uid.substring(0, 6)}`;
+
+            await fetch(`${API_URL}/save-user`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ uid, password: pass, name })
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function addRowFromData(user) {
+        const listDiv = document.getElementById('list');
+        const div = document.createElement('div');
+        div.className = 'result-row';
+        div.id = `row-${user.uid}`;
+
+        let passShow = user.password ? `<div class="pass-display">🔐 ${user.password}</div>` : '';
+        let passBtn = user.password ? `<button class="mini-btn" onclick="copyText('${user.password}', this)">Copy Pass</button>` : '';
+
+        div.innerHTML = `
+            <div class="info-part">
+                <a href="https://www.facebook.com/${user.uid}" target="_blank" class="uid-link">
+                    👤 ${user.uid}
+                </a>
+                <div class="user-name">📝 ${user.name}</div>
+                ${passShow}
+            </div>
+            <div class="btn-group">
+                <button class="mini-btn" onclick="copyText('${user.uid}', this)">Copy UID</button>
+                ${passBtn}
+                <button class="mini-btn btn-delete" onclick="deleteUser('${user.uid}')">🗑 Delete</button>
+            </div>
+        `;
+        listDiv.appendChild(div);
+    }
+
+    function copyText(txt, btn) {
+        navigator.clipboard.writeText(txt).then(() => {
+            let oldText = btn.innerText;
+            btn.innerText = "✓ Copied";
+            btn.style.color = "#4fc3f7";
+            setTimeout(() => { 
+                btn.innerText = oldText; 
+                btn.style.color = "";
+            }, 1500);
+        });
+    }
+
+    async function deleteUser(uid) {
+        if(confirm(`Delete ${uid}?`)) {
+            try {
+                await fetch(`${API_URL}/users/${uid}`, { method: 'DELETE' });
+                document.getElementById(`row-${uid}`).remove();
+                
+                const listDiv = document.getElementById('list');
+                document.getElementById('count').innerText = listDiv.children.length;
+            } catch (error) {
+                console.error('Error deleting:', error);
+            }
+        }
+    }
+
+    async function downloadFile() {
+        try {
+            const response = await fetch(`${API_URL}/download`);
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Active_UIDs.txt';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } catch (error) {
+            console.error('Error downloading:', error);
+            alert('Download failed!');
+        }
+    }
+</script>
+
+</body>
+</html>

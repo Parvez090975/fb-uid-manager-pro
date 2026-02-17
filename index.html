@@ -3,11 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FB UID Manager Pro Demo App</title>
+    <title>FB UID Manager Pro</title>
+    <style>
+        /* Dark Theme Setup */
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
+        .container { width: 100%; max-width: 600px; background: #1e1e1e; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); }
+        
+        h3 { margin: 0 0 15px 0; color: #4267B2; text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
+        /* Input Box */
+        textarea { width: 100%; height: 100px; background: #252525; border: 1px solid #333; color: #fff; padding: 10px; outline: none; border-radius: 6px; font-family: monospace; font-size: 13px; resize: vertical; }
+        
+        /* Controls */
+        .controls { margin-top: 10px; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+        .main-btn { padding: 10px; border: none; cursor: pointer; font-weight: bold; border-radius: 5px; color: white; transition: 0.2s; }
+        .btn-clear { background: #d32f2f; }
+        .btn-process { background: #1976D2; }
+
+        /* Save & Download Area */
+        .save-bar { margin-top: 15px; background: #222; padding: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
+        .btn-download { background: #ff9800; color: #000; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        
+        /* List Area */
+        .result-container { margin-top: 15px; height: 450px; overflow-y: auto; border: 1px solid #333; background: #121212; border-radius: 6px; }
+        
+        /* Row Items */
+        .result-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #2a2a2a; }
+        .result-row:hover { background: #1a1a1a; }
+
+        /* UID Link & Visited Style */
+        .info-part { display: flex; flex-direction: column; }
+        .uid-link { color: #64b5f6; text-decoration: none; font-weight: bold; font-family: monospace; font-size: 14px; }
+        .uid-link:hover { text-decoration: underline; }
+        
+        /* Click korle color change hobe */
+        .uid-link.visited { color: #555 !important; text-decoration: line-through !important; opacity: 0.5; }
+        
+        .pass-display { font-size: 11px; color: #888; margin-top: 3px; font-family: monospace; }
+
+        /* Action Buttons */
+        .btn-group { display: flex; gap: 5px; }
+        .mini-btn { border: 1px solid #444; background: #333; color: #ccc; padding: 5px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; }
+        .mini-btn:hover { background: #444; }
+        
+        /* Save Button Green */
+        .btn-save { background: #2e7d32; border-color: #2e7d32; color: white; }
+        .btn-save:hover { background: #1b5e20; }
+        .btn-save:disabled { background: #1b5e20; opacity: 0.5; cursor: default; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+    </style>
 </head>
 <body>
-    <h1>Welcome to FB UID Manager Pro</h1>
-    <p><strong>Current Date and Time (UTC):</strong> 2026-02-17 09:02:56</p>
-    <p><strong>Current User's Login:</strong> Parvez090975</p>
+
+<div class="container">
+    <h3>FB UID Check & Save</h3>
+    
+    <textarea id="inputData" placeholder="Paste UID|PASS here..."></textarea>
+
+    <div class="controls">
+        <button class="main-btn btn-clear" onclick="clearAll()">Clear</button>
+        <button class="main-btn btn-process" onclick="processList()">Process List</button>
+    </div>
+
+    <div class="save-bar">
+        <span style="color: #ccc; font-size: 13px;">Saved: <b id="count" style="color: #00e676; font-size: 16px;">0</b></span>
+        <button class="btn-download" onclick="downloadFile()"> Download .txt</button>
+    </div>
+
+    <div class="result-container" id="list"></div>
+</div>
+
+<script>
+    let savedList = [];
+
+    // Clear function
+    function clearAll() {
+        if(confirm("Clear all data?")) {
+            document.getElementById('inputData').value = '';
+            document.getElementById('list').innerHTML = '';
+            savedList = [];
+            document.getElementById('count').innerText = '0';
+        }
+    }
+
+    // Process List
+    function processList() {
+        const raw = document.getElementById('inputData').value;
+        const listDiv = document.getElementById('list');
+        listDiv.innerHTML = '';
+        savedList = []; // Reset saved on new process
+        document.getElementById('count').innerText = '0';
+
+        if(!raw.trim()) return alert("Box empty!");
+
+        const lines = raw.split('\n');
+        lines.forEach(line => {
+            if(line.trim()) {
+                let parts = line.split('|');
+                let uid = parts[0].trim();
+                let pass = parts.length > 1 ? parts[1].trim() : '';
+
+                if(/\^\d+\$/.test(uid)) {
+                    addRow(uid, pass);
+                }
+            }
+        });
+    }
+
+    // Add Row Function
+    function addRow(uid, pass) {
+        const listDiv = document.getElementById('list');
+        const div = document.createElement('div');
+        div.className = 'result-row';
+
+        let passShow = pass ? `<div class="pass-display">Pw: ${pass}</div>` : '';
+        let fullData = pass ? `${uid}|${pass}` : uid;
+        
+        // Buttons HTML
+        let passBtn = pass ? `<button class="mini-btn" onclick="copyText('${pass}', this)">Copy Pass</button>` : '';
+
+        div.innerHTML = `
+            <div class="info-part">
+                <a href="https://www.facebook.com/${uid}" target="_blank" class="uid-link" onclick="markVisited(this)">
+                    ${uid}
+                </a>
+                ${passShow}
+            </div>
+            <div class="btn-group">
+                <button class="mini-btn" onclick="copyText('${uid}', this)">Copy UID</button>
+                ${passBtn}
+                <button class="mini-btn btn-save" onclick="saveID('${fullData}', this)">Save</button>
+            </div>
+        `;
+        listDiv.appendChild(div);
+    }
+
+    // Mark as visited (Grey + Cut line)
+    function markVisited(el) {
+        el.classList.add('visited');
+    }
+
+    // Copy Text
+    function copyText(txt, btn) {
+        navigator.clipboard.writeText(txt).then(() => {
+            let oldText = btn.innerText;
+            btn.innerText = "Copied";
+            btn.style.color = "#4fc3f7";
+            setTimeout(() => { 
+                btn.innerText = oldText; 
+                btn.style.color = "";
+            }, 1000);
+        });
+    }
+
+    // Save ID Function
+    function saveID(data, btn) {
+        savedList.push(data);
+        document.getElementById('count').innerText = savedList.length;
+        
+        // Visual Change
+        btn.innerText = "Saved";
+        btn.disabled = true;
+    }
+
+    // Download Function
+    function downloadFile() {
+        if(savedList.length === 0) return alert("Nothing saved yet!");
+        
+        let content = savedList.join('\n');
+        let blob = new Blob([content], {type: "text/plain"});
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement("a");
+        a.href = url;
+        a.download = "Active_UIDs.txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    }
+</script>
+
 </body>
 </html>

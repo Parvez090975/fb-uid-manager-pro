@@ -1,338 +1,508 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FB UID Manager Pro</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        
-        body { 
-            background-color: #121212; 
-            color: #e0e0e0; 
-            font-family: 'Segoe UI', sans-serif; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            padding: 15px; 
-            min-height: 100vh;
-        }
-        
-        .container { 
-            width: 100%; 
-            max-width: 600px; 
-            background: #1e1e1e; 
-            padding: 20px; 
-            border-radius: 12px; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.8); 
-        }
-        
-        h3 { 
-            margin: 0 0 20px 0; 
-            color: #4267B2; 
-            text-align: center; 
-            border-bottom: 2px solid #333; 
-            padding-bottom: 10px; 
-            font-size: 24px;
-        }
-
-        textarea { 
-            width: 100%; 
-            height: 120px; 
-            background: #252525; 
-            border: 1px solid #444; 
-            color: #fff; 
-            padding: 12px; 
-            outline: none; 
-            border-radius: 6px; 
-            font-family: monospace; 
-            font-size: 13px; 
-            resize: vertical;
-            transition: border 0.3s;
-        }
-        
-        textarea:focus { border-color: #4267B2; }
-        
-        .controls { 
-            margin-top: 15px; 
-            display: grid; 
-            grid-template-columns: 1fr 2fr; 
-            gap: 10px; 
-        }
-        
-        .main-btn { 
-            padding: 12px; 
-            border: none; 
-            cursor: pointer; 
-            font-weight: bold; 
-            border-radius: 6px; 
-            color: white; 
-            transition: 0.3s; 
-            font-size: 14px;
-        }
-        
-        .btn-clear { background: #d32f2f; }
-        .btn-clear:hover { background: #b71c1c; }
-        
-        .btn-process { background: #1976D2; }
-        .btn-process:hover { background: #1565c0; }
-
-        .save-bar { 
-            margin-top: 15px; 
-            background: #222; 
-            padding: 12px; 
-            border-radius: 6px; 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            border: 1px solid #333; 
-        }
-        
-        .btn-download { 
-            background: #ff9800; 
-            color: #000; 
-            border: none; 
-            padding: 10px 18px; 
-            border-radius: 5px; 
-            font-weight: bold; 
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        
-        .btn-download:hover { background: #f57c00; }
-        
-        .result-container { 
-            margin-top: 15px; 
-            height: 450px; 
-            overflow-y: auto; 
-            border: 1px solid #333; 
-            background: #121212; 
-            border-radius: 6px; 
-        }
-        
-        .result-row { 
-            display: grid; 
-            grid-template-columns: 1fr auto; 
-            gap: 10px; 
-            align-items: center; 
-            padding: 12px; 
-            border-bottom: 1px solid #2a2a2a; 
-            transition: background 0.2s;
-        }
-        
-        .result-row:hover { background: #1a1a1a; }
-
-        .info-part { display: flex; flex-direction: column; }
-        
-        .uid-link { 
-            color: #64b5f6; 
-            text-decoration: none; 
-            font-weight: bold; 
-            font-family: monospace; 
-            font-size: 14px;
-            transition: 0.2s;
-        }
-        
-        .uid-link:hover { 
-            text-decoration: underline;
-            color: #90caf9;
-        }
-        
-        .uid-link.visited { 
-            color: #666 !important; 
-            text-decoration: line-through !important; 
-            opacity: 0.6;
-        }
-        
-        .pass-display { 
-            font-size: 12px; 
-            color: #999; 
-            margin-top: 4px; 
-            font-family: monospace;
-        }
-
-        .btn-group { 
-            display: flex; 
-            gap: 6px; 
-            flex-wrap: wrap;
-        }
-        
-        .mini-btn { 
-            border: 1px solid #444; 
-            background: #333; 
-            color: #ccc; 
-            padding: 6px 10px; 
-            font-size: 11px; 
-            cursor: pointer; 
-            border-radius: 4px;
-            transition: 0.2s;
-        }
-        
-        .mini-btn:hover { 
-            background: #444;
-            color: #fff;
-        }
-        
-        .btn-save { 
-            background: #2e7d32; 
-            border-color: #2e7d32; 
-            color: white; 
-        }
-        
-        .btn-save:hover { 
-            background: #1b5e20; 
-        }
-        
-        .btn-save:disabled { 
-            background: #1b5e20; 
-            opacity: 0.5; 
-            cursor: default; 
-        }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #1a1a1a; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
-
-        .empty-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        #count {
-            color: #00e676;
-            font-size: 18px;
-            font-weight: bold;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ID Manager Pro</title>
+  <style>
+    :root{
+      --bg:#0b1020; --card:#121a33; --muted:#9aa4bf; --text:#e7ecff;
+      --accent:#6ea8fe; --danger:#ff6b6b; --ok:#57e39a; --border:#243058;
+      --input:#0f1730;
+    }
+    [data-theme="light"]{
+      --bg:#f6f8ff; --card:#ffffff; --muted:#4b5568; --text:#0b1020;
+      --accent:#2563eb; --danger:#dc2626; --ok:#16a34a; --border:#e5e7f2;
+      --input:#f3f5ff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+      background:var(--bg); color:var(--text);
+    }
+    .wrap{max-width:1100px; margin:0 auto; padding:24px}
+    header{
+      display:flex; gap:12px; align-items:center; justify-content:space-between;
+      margin-bottom:16px;
+    }
+    .title h1{margin:0; font-size:20px; letter-spacing:.2px}
+    .title p{margin:4px 0 0; color:var(--muted); font-size:13px}
+    .row{display:grid; grid-template-columns: 1.2fr .8fr; gap:16px}
+    @media (max-width: 900px){ .row{grid-template-columns:1fr} }
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    }
+    textarea, input, select{
+      width:100%;
+      background:var(--input);
+      color:var(--text);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      outline:none;
+      font-size:14px;
+    }
+    textarea{min-height:210px; resize:vertical; line-height:1.35}
+    .btns{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px}
+    button{
+      border:1px solid var(--border);
+      background:transparent;
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:600;
+      font-size:13px;
+    }
+    button.primary{background:var(--accent); border-color:transparent; color:white}
+    button.danger{background:var(--danger); border-color:transparent; color:white}
+    button:disabled{opacity:.5; cursor:not-allowed}
+    .meta{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px; color:var(--muted); font-size:13px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:6px 10px;
+      background:rgba(255,255,255,.03);
+    }
+    .dot{width:8px; height:8px; border-radius:50%}
+    .dot.ok{background:var(--ok)}
+    .dot.warn{background:var(--danger)}
+    .listHead{display:flex; gap:10px; align-items:center; justify-content:space-between}
+    .listHead h2{margin:0; font-size:15px}
+    .listTools{display:flex; gap:10px; align-items:center}
+    .listTools input{max-width:260px}
+    .tableWrap{margin-top:12px; overflow:auto; border-radius:12px; border:1px solid var(--border)}
+    table{width:100%; border-collapse:collapse; font-size:13px}
+    th, td{padding:10px 12px; border-bottom:1px solid var(--border); text-align:left; white-space:nowrap}
+    th{position:sticky; top:0; background:var(--card); z-index:1}
+    tr:last-child td{border-bottom:none}
+    .tag{
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:4px 8px;
+      color:var(--muted);
+      font-size:12px;
+    }
+    .actions{display:flex; gap:8px}
+    .small{padding:6px 10px; border-radius:10px; font-weight:700}
+    .toast{
+      position:fixed; bottom:18px; left:50%; transform:translateX(-50%);
+      background:var(--card); border:1px solid var(--border);
+      padding:10px 12px; border-radius:12px; color:var(--text);
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+      display:none;
+    }
+    .hint{color:var(--muted); font-size:12px; margin-top:8px; line-height:1.35}
+    .split{display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px}
+    @media (max-width: 900px){ .split{grid-template-columns:1fr} }
+  </style>
 </head>
 <body>
-
-<div class="container">
-    <h3>FB UID Manager Pro</h3>
-    
-    <textarea id="inputData" placeholder="Paste UID|PASS here..."></textarea>
-
-    <div class="controls">
-        <button class="main-btn btn-clear" onclick="clearAll()">Clear</button>
-        <button class="main-btn btn-process" onclick="processList()">Process List</button>
+<div class="wrap" id="app">
+  <header>
+    <div class="title">
+      <h1>ID Manager Pro</h1>
+      <p>Manage identifiers safely: clean, dedupe, tag, search, and export (no passwords).</p>
     </div>
-
-    <div class="save-bar">
-        <span style="color: #ccc; font-size: 14px;">Saved: <b id="count">0</b></span>
-        <button class="btn-download" onclick="downloadFile()">Download .txt</button>
+    <div class="actions">
+      <button id="themeBtn" class="small">🌓 Theme</button>
+      <button id="backupBtn" class="small">⬇️ Backup JSON</button>
+      <button id="restoreBtn" class="small">⬆️ Restore</button>
+      <input id="restoreFile" type="file" accept="application/json" style="display:none" />
     </div>
+  </header>
 
-    <div class="result-container" id="list">
-        <div class="empty-message">Paste UID|PASS and click Process List</div>
-    </div>
+  <div class="row">
+    <section class="card">
+      <h2 style="margin:0 0 10px;font-size:15px;">Input</h2>
+      <textarea id="input" placeholder="Paste IDs here (one per line)&#10;Example: 1000123456789"></textarea>
+
+      <div class="split">
+        <div>
+          <label class="hint" for="tag">Optional tag for new items</label>
+          <input id="tag" placeholder="e.g. leads, old, vip" />
+        </div>
+        <div>
+          <label class="hint" for="mode">Validation</label>
+          <select id="mode">
+            <option value="digits">Digits only (default)</option>
+            <option value="alnum">Alphanumeric</option>
+            <option value="any">Any non-empty</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btns">
+        <button id="processBtn" class="primary">Process List</button>
+        <button id="clearInputBtn">Clear Input</button>
+        <button id="pasteSampleBtn">Paste Sample</button>
+        <button id="wipeAllBtn" class="danger">Wipe Saved</button>
+      </div>
+
+      <div class="meta">
+        <span class="pill"><span class="dot ok"></span> Saved: <b id="savedCount">0</b></span>
+        <span class="pill"><span class="dot warn"></span> Rejected: <b id="rejectedCount">0</b></span>
+        <span class="pill">Duplicates removed: <b id="dupeCount">0</b></span>
+      </div>
+
+      <div class="hint">
+        Tips: You can paste messy lists—this will trim spaces, remove duplicates, and optionally validate format.
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="listHead">
+        <h2>Saved Items</h2>
+        <div class="listTools">
+          <input id="search" placeholder="Search ID / tag..." />
+          <select id="sort">
+            <option value="newest">Newest</option>
+            <option value="oldest">Oldest</option>
+            <option value="idAsc">ID A→Z</option>
+            <option value="idDesc">ID Z→A</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="btns" style="margin-top:12px;">
+        <button id="copyBtn">Copy Visible</button>
+        <button id="exportTxtBtn">Download .txt</button>
+        <button id="exportCsvBtn">Download .csv</button>
+        <button id="clearFilterBtn">Clear Filter</button>
+      </div>
+
+      <div class="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="min-width:220px;">ID</th>
+              <th style="min-width:120px;">Tag</th>
+              <th style="min-width:170px;">Added</th>
+              <th style="min-width:120px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="tbody">
+            <tr><td colspan="4" style="color:var(--muted);">No items yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="hint">
+        Data is saved in your browser (localStorage). Use Backup/Restore if you want portability.
+      </div>
+    </section>
+  </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
-    let savedList = [];
+(() => {
+  const $ = (id) => document.getElementById(id);
 
-    function clearAll() {
-        if(confirm("Clear all data?")) {
-            document.getElementById('inputData').value = '';
-            document.getElementById('list').innerHTML = '<div class="empty-message">Paste UID|PASS and click Process List</div>';
-            savedList = [];
-            document.getElementById('count').innerText = '0';
+  const LS_KEY = "id_manager_pro_v1";
+  const THEME_KEY = "id_manager_theme";
+
+  const state = {
+    items: [],   // {id, tag, addedAt}
+    filtered: [],
+  };
+
+  function toast(msg){
+    const t = $("toast");
+    t.textContent = msg;
+    t.style.display = "block";
+    clearTimeout(toast._tm);
+    toast._tm = setTimeout(() => t.style.display = "none", 1600);
+  }
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(LS_KEY);
+      state.items = raw ? JSON.parse(raw) : [];
+      if(!Array.isArray(state.items)) state.items = [];
+    }catch{ state.items = []; }
+
+    const theme = localStorage.getItem(THEME_KEY) || "dark";
+    document.documentElement.dataset.theme = theme === "light" ? "light" : "dark";
+  }
+
+  function save(){
+    localStorage.setItem(LS_KEY, JSON.stringify(state.items));
+  }
+
+  function fmtTime(ts){
+    const d = new Date(ts);
+    return d.toLocaleString();
+  }
+
+  function normalizeLines(text){
+    return text
+      .split(/\r?\n/)
+      .map(s => s.trim())
+      .filter(Boolean);
+  }
+
+  function isValid(id, mode){
+    if(mode === "digits") return /^[0-9]+$/.test(id);
+    if(mode === "alnum") return /^[a-zA-Z0-9]+$/.test(id);
+    return id.length > 0;
+  }
+
+  function applyFilter(){
+    const q = $("search").value.trim().toLowerCase();
+    let items = [...state.items];
+
+    const sort = $("sort").value;
+    if(sort === "newest") items.sort((a,b) => b.addedAt - a.addedAt);
+    if(sort === "oldest") items.sort((a,b) => a.addedAt - b.addedAt);
+    if(sort === "idAsc") items.sort((a,b) => a.id.localeCompare(b.id));
+    if(sort === "idDesc") items.sort((a,b) => b.id.localeCompare(a.id));
+
+    if(q){
+      items = items.filter(x =>
+        x.id.toLowerCase().includes(q) ||
+        (x.tag || "").toLowerCase().includes(q)
+      );
+    }
+    state.filtered = items;
+  }
+
+  function render(){
+    applyFilter();
+
+    $("savedCount").textContent = String(state.items.length);
+
+    const tb = $("tbody");
+    tb.innerHTML = "";
+
+    if(state.filtered.length === 0){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="4" style="color:var(--muted);">No matching items.</td>`;
+      tb.appendChild(tr);
+      return;
+    }
+
+    for(const item of state.filtered){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(item.id)}</td>
+        <td>${item.tag ? `<span class="tag">${escapeHtml(item.tag)}</span>` : `<span style="color:var(--muted);">—</span>`}</td>
+        <td style="color:var(--muted);">${escapeHtml(fmtTime(item.addedAt))}</td>
+        <td>
+          <div class="actions">
+            <button class="small" data-act="copy" data-id="${escapeAttr(item.id)}">Copy</button>
+            <button class="small" data-act="del" data-id="${escapeAttr(item.id)}">Del</button>
+          </div>
+        </td>
+      `;
+      tb.appendChild(tr);
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s)
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+  function escapeAttr(s){ return escapeHtml(s).replaceAll("`","&#96;"); }
+
+  function processInput(){
+    const input = $("input").value;
+    const lines = normalizeLines(input);
+    const mode = $("mode").value;
+    const tag = $("tag").value.trim();
+
+    let rejected = 0;
+    let dupes = 0;
+
+    // Existing IDs set
+    const existing = new Set(state.items.map(x => x.id));
+
+    // Normalize & validate
+    const cleaned = [];
+    const seen = new Set();
+
+    for(const raw of lines){
+      const id = raw.replace(/\s+/g, "");
+      if(!isValid(id, mode)){
+        rejected++;
+        continue;
+      }
+      if(seen.has(id)){
+        dupes++;
+        continue;
+      }
+      seen.add(id);
+      cleaned.push(id);
+    }
+
+    // Insert, skipping existing
+    for(const id of cleaned){
+      if(existing.has(id)){
+        dupes++;
+        continue;
+      }
+      state.items.push({ id, tag: tag || "", addedAt: Date.now() });
+      existing.add(id);
+    }
+
+    save();
+    $("rejectedCount").textContent = String(rejected);
+    $("dupeCount").textContent = String(dupes);
+    toast(`Added: ${cleaned.length - (dupes)} | Rejected: ${rejected} | Dupes: ${dupes}`);
+    render();
+  }
+
+  function downloadText(filename, text){
+    const blob = new Blob([text], {type:"text/plain;charset=utf-8"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportTxt(){
+    const ids = state.filtered.map(x => x.id).join("\n");
+    downloadText("ids.txt", ids || "");
+  }
+
+  function exportCsv(){
+    const rows = [["id","tag","addedAt"]];
+    for(const x of state.filtered){
+      rows.push([x.id, x.tag || "", new Date(x.addedAt).toISOString()]);
+    }
+    const csv = rows.map(r => r.map(v => `"${String(v).replaceAll('"','""')}"`).join(",")).join("\n");
+    downloadText("ids.csv", csv);
+  }
+
+  async function copyVisible(){
+    const txt = state.filtered.map(x => x.id).join("\n");
+    if(!txt){ toast("Nothing to copy"); return; }
+    await navigator.clipboard.writeText(txt);
+    toast("Copied visible IDs");
+  }
+
+  async function copyOne(id){
+    await navigator.clipboard.writeText(id);
+    toast("Copied");
+  }
+
+  function delOne(id){
+    state.items = state.items.filter(x => x.id !== id);
+    save();
+    render();
+    toast("Deleted");
+  }
+
+  function wipeAll(){
+    state.items = [];
+    save();
+    $("rejectedCount").textContent = "0";
+    $("dupeCount").textContent = "0";
+    render();
+    toast("Wiped saved items");
+  }
+
+  function backup(){
+    const data = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      items: state.items
+    };
+    downloadText("id-manager-backup.json", JSON.stringify(data, null, 2));
+  }
+
+  function restoreFromFile(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const parsed = JSON.parse(String(reader.result || ""));
+        const items = parsed?.items;
+        if(!Array.isArray(items)) throw new Error("Invalid backup format");
+        // basic sanitize
+        const safe = [];
+        const seen = new Set();
+        for(const it of items){
+          const id = String(it?.id || "").trim();
+          if(!id || seen.has(id)) continue;
+          seen.add(id);
+          safe.push({
+            id,
+            tag: String(it?.tag || ""),
+            addedAt: Number(it?.addedAt || Date.now())
+          });
         }
-    }
+        state.items = safe;
+        save();
+        render();
+        toast("Restored backup");
+      }catch(e){
+        toast("Restore failed (bad file)");
+      }
+    };
+    reader.readAsText(file);
+  }
 
-    function processList() {
-        const raw = document.getElementById('inputData').value;
-        const listDiv = document.getElementById('list');
-        listDiv.innerHTML = '';
-        savedList = [];
-        document.getElementById('count').innerText = '0';
+  function toggleTheme(){
+    const cur = document.documentElement.dataset.theme === "light" ? "light" : "dark";
+    const next = cur === "light" ? "dark" : "light";
+    document.documentElement.dataset.theme = next;
+    localStorage.setItem(THEME_KEY, next);
+  }
 
-        if(!raw.trim()) {
-            alert("Box empty!");
-            return;
-        }
+  // Wire events
+  $("processBtn").addEventListener("click", processInput);
+  $("clearInputBtn").addEventListener("click", () => { $("input").value=""; toast("Input cleared"); });
+  $("pasteSampleBtn").addEventListener("click", () => {
+    $("input").value = ["1000123456789","1000987654321","1000123456789","abc123"].join("\n");
+    toast("Sample pasted");
+  });
+  $("wipeAllBtn").addEventListener("click", wipeAll);
 
-        const lines = raw.split('\n');
-        let count = 0;
-        
-        lines.forEach(line => {
-            if(line.trim()) {
-                let parts = line.split('|');
-                let uid = parts[0].trim();
-                let pass = parts.length > 1 ? parts[1].trim() : '';
+  $("search").addEventListener("input", render);
+  $("sort").addEventListener("change", render);
+  $("clearFilterBtn").addEventListener("click", () => { $("search").value=""; $("sort").value="newest"; render(); });
 
-                if(/^\d+$/.test(uid)) {
-                    addRow(uid, pass);
-                    count++;
-                }
-            }
-        });
+  $("copyBtn").addEventListener("click", copyVisible);
+  $("exportTxtBtn").addEventListener("click", exportTxt);
+  $("exportCsvBtn").addEventListener("click", exportCsv);
 
-        if(count === 0) {
-            listDiv.innerHTML = '<div class="empty-message">No valid UIDs found</div>';
-        }
-    }
+  $("tbody").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if(!btn) return;
+    const act = btn.getAttribute("data-act");
+    const id = btn.getAttribute("data-id");
+    if(!act || !id) return;
+    if(act === "copy") copyOne(id);
+    if(act === "del") delOne(id);
+  });
 
-    function addRow(uid, pass) {
-        const listDiv = document.getElementById('list');
-        const div = document.createElement('div');
-        div.className = 'result-row';
+  $("themeBtn").addEventListener("click", () => { toggleTheme(); toast("Theme changed"); });
 
-        let passShow = pass ? '<div class="pass-display">Pw: ' + pass + '</div>' : '';
-        let fullData = pass ? uid + '|' + pass : uid;
-        
-        let passBtn = pass ? '<button class="mini-btn" onclick="copyText(\'' + pass + '\', this)">Copy Pass</button>' : '';
+  $("backupBtn").addEventListener("click", backup);
+  $("restoreBtn").addEventListener("click", () => $("restoreFile").click());
+  $("restoreFile").addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if(file) restoreFromFile(file);
+    e.target.value = "";
+  });
 
-        div.innerHTML = '<div class="info-part"><a href="https://www.facebook.com/' + uid + '" target="_blank" class="uid-link" onclick="markVisited(this)">' + uid + '</a>' + passShow + '</div><div class="btn-group"><button class="mini-btn" onclick="copyText(\'' + uid + '\', this)">Copy UID</button>' + passBtn + '<button class="mini-btn btn-save" onclick="saveID(\'' + fullData + '\', this)">Save</button></div>';
-        
-        listDiv.appendChild(div);
-    }
-
-    function markVisited(el) {
-        el.classList.add('visited');
-        return true;
-    }
-
-    function copyText(txt, btn) {
-        navigator.clipboard.writeText(txt).then(() => {
-            let oldText = btn.innerText;
-            btn.innerText = "Copied";
-            btn.style.color = "#4fc3f7";
-            setTimeout(() => { 
-                btn.innerText = oldText; 
-                btn.style.color = "";
-            }, 1500);
-        });
-    }
-
-    function saveID(data, btn) {
-        savedList.push(data);
-        document.getElementById('count').innerText = savedList.length;
-        
-        btn.innerText = "Saved";
-        btn.disabled = true;
-        btn.style.opacity = "0.6";
-    }
-
-    function downloadFile() {
-        if(savedList.length === 0) {
-            alert("Nothing saved yet!");
-            return;
-        }
-        
-        let content = savedList.join('\n');
-        let blob = new Blob([content], {type: "text/plain"});
-        let url = URL.createObjectURL(blob);
-        let a = document.createElement("a");
-        a.href = url;
-        a.download = "Active_UIDs.txt";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
+  // init
+  load();
+  render();
+})();
 </script>
-
 </body>
 </html>

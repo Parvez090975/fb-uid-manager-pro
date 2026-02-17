@@ -74,8 +74,9 @@
     .dot.warn{background:var(--danger)}
     .listHead{display:flex; gap:10px; align-items:center; justify-content:space-between}
     .listHead h2{margin:0; font-size:15px}
-    .listTools{display:flex; gap:10px; align-items:center}
+    .listTools{display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end}
     .listTools input{max-width:260px}
+    .listTools select{max-width:180px}
     .tableWrap{margin-top:12px; overflow:auto; border-radius:12px; border:1px solid var(--border)}
     table{width:100%; border-collapse:collapse; font-size:13px}
     th, td{padding:10px 12px; border-bottom:1px solid var(--border); text-align:left; white-space:nowrap}
@@ -100,6 +101,12 @@
     .hint{color:var(--muted); font-size:12px; margin-top:8px; line-height:1.35}
     .split{display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px}
     @media (max-width: 900px){ .split{grid-template-columns:1fr} }
+    .chk{
+      width:18px; height:18px;
+      accent-color: var(--accent);
+      cursor:pointer;
+    }
+    .muted{color:var(--muted)}
   </style>
 </head>
 <body>
@@ -107,12 +114,14 @@
   <header>
     <div class="title">
       <h1>ID Manager Pro</h1>
-      <p>Manage identifiers safely: clean, dedupe, tag, search, and export (no passwords).</p>
+      <p>Manage identifiers safely: clean, dedupe, tag, search, filter, bulk actions, and export (no passwords).</p>
     </div>
     <div class="actions">
       <button id="themeBtn" class="small">🌓 Theme</button>
-      <button id="backupBtn" class="small">⬇️ Backup JSON</button>
+      <button id="importBtn" class="small">📄 Import</button>
+      <button id="backupBtn" class="small">⬇️ Backup</button>
       <button id="restoreBtn" class="small">⬆️ Restore</button>
+      <input id="importFile" type="file" accept=".txt,.csv,text/plain,text/csv" style="display:none" />
       <input id="restoreFile" type="file" accept="application/json" style="display:none" />
     </div>
   </header>
@@ -146,12 +155,12 @@
 
       <div class="meta">
         <span class="pill"><span class="dot ok"></span> Saved: <b id="savedCount">0</b></span>
-        <span class="pill"><span class="dot warn"></span> Rejected: <b id="rejectedCount">0</b></span>
-        <span class="pill">Duplicates removed: <b id="dupeCount">0</b></span>
+        <span class="pill"><span class="dot warn"></span> Rejected (last run): <b id="rejectedCount">0</b></span>
+        <span class="pill">Duplicates (last run): <b id="dupeCount">0</b></span>
       </div>
 
       <div class="hint">
-        Tips: You can paste messy lists—this will trim spaces, remove duplicates, and optionally validate format.
+        Tips: Paste messy lists—this trims spaces, removes duplicates, validates format, and supports bulk export.
       </div>
     </section>
 
@@ -159,6 +168,9 @@
       <div class="listHead">
         <h2>Saved Items</h2>
         <div class="listTools">
+          <select id="tagFilter" title="Filter by tag">
+            <option value="">All tags</option>
+          </select>
           <input id="search" placeholder="Search ID / tag..." />
           <select id="sort">
             <option value="newest">Newest</option>
@@ -171,6 +183,8 @@
 
       <div class="btns" style="margin-top:12px;">
         <button id="copyBtn">Copy Visible</button>
+        <button id="copySelectedBtn">Copy Selected</button>
+        <button id="deleteSelectedBtn" class="danger">Delete Selected</button>
         <button id="exportTxtBtn">Download .txt</button>
         <button id="exportCsvBtn">Download .csv</button>
         <button id="clearFilterBtn">Clear Filter</button>
@@ -180,6 +194,12 @@
         <table>
           <thead>
             <tr>
+              <th style="min-width:60px;">
+                <label style="display:flex; align-items:center; gap:8px;">
+                  <input class="chk" id="selectAll" type="checkbox" />
+                  <span class="muted">All</span>
+                </label>
+              </th>
               <th style="min-width:220px;">ID</th>
               <th style="min-width:120px;">Tag</th>
               <th style="min-width:170px;">Added</th>
@@ -187,13 +207,13 @@
             </tr>
           </thead>
           <tbody id="tbody">
-            <tr><td colspan="4" style="color:var(--muted);">No items yet.</td></tr>
+            <tr><td colspan="5" class="muted">No items yet.</td></tr>
           </tbody>
         </table>
       </div>
 
       <div class="hint">
-        Data is saved in your browser (localStorage). Use Backup/Restore if you want portability.
+        Data is saved in your browser (localStorage). Use Backup/Restore for portability. Import supports .txt/.csv.
       </div>
     </section>
   </div>
@@ -205,12 +225,13 @@
 (() => {
   const $ = (id) => document.getElementById(id);
 
-  const LS_KEY = "id_manager_pro_v1";
+  const LS_KEY = "id_manager_pro_v2";
   const THEME_KEY = "id_manager_theme";
 
   const state = {
-    items: [],   // {id, tag, addedAt}
+    items: [],     // {id, tag, addedAt}
     filtered: [],
+    selected: new Set(),
   };
 
   function toast(msg){
@@ -218,7 +239,7 @@
     t.textContent = msg;
     t.style.display = "block";
     clearTimeout(toast._tm);
-    toast._tm = setTimeout(() => t.style.display = "none", 1600);
+    toast._tm = setTimeout(() => t.style.display = "none", 2200);
   }
 
   function load(){
@@ -254,57 +275,6 @@
     return id.length > 0;
   }
 
-  function applyFilter(){
-    const q = $("search").value.trim().toLowerCase();
-    let items = [...state.items];
-
-    const sort = $("sort").value;
-    if(sort === "newest") items.sort((a,b) => b.addedAt - a.addedAt);
-    if(sort === "oldest") items.sort((a,b) => a.addedAt - b.addedAt);
-    if(sort === "idAsc") items.sort((a,b) => a.id.localeCompare(b.id));
-    if(sort === "idDesc") items.sort((a,b) => b.id.localeCompare(a.id));
-
-    if(q){
-      items = items.filter(x =>
-        x.id.toLowerCase().includes(q) ||
-        (x.tag || "").toLowerCase().includes(q)
-      );
-    }
-    state.filtered = items;
-  }
-
-  function render(){
-    applyFilter();
-
-    $("savedCount").textContent = String(state.items.length);
-
-    const tb = $("tbody");
-    tb.innerHTML = "";
-
-    if(state.filtered.length === 0){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `<td colspan="4" style="color:var(--muted);">No matching items.</td>`;
-      tb.appendChild(tr);
-      return;
-    }
-
-    for(const item of state.filtered){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${escapeHtml(item.id)}</td>
-        <td>${item.tag ? `<span class="tag">${escapeHtml(item.tag)}</span>` : `<span style="color:var(--muted);">—</span>`}</td>
-        <td style="color:var(--muted);">${escapeHtml(fmtTime(item.addedAt))}</td>
-        <td>
-          <div class="actions">
-            <button class="small" data-act="copy" data-id="${escapeAttr(item.id)}">Copy</button>
-            <button class="small" data-act="del" data-id="${escapeAttr(item.id)}">Del</button>
-          </div>
-        </td>
-      `;
-      tb.appendChild(tr);
-    }
-  }
-
   function escapeHtml(s){
     return String(s)
       .replaceAll("&","&amp;")
@@ -315,6 +285,103 @@
   }
   function escapeAttr(s){ return escapeHtml(s).replaceAll("`","&#96;"); }
 
+  function rebuildTagFilter(){
+    const sel = $("tagFilter");
+    const current = sel.value;
+    const tags = Array.from(
+      new Set(state.items.map(x => (x.tag || "").trim()).filter(Boolean))
+    ).sort((a,b) => a.localeCompare(b));
+    sel.innerHTML =
+      `<option value="">All tags</option>` +
+      tags.map(t => `<option value="${escapeAttr(t)}">${escapeHtml(t)}</option>`).join("");
+
+    if([...sel.options].some(o => o.value === current)) sel.value = current;
+    else sel.value = "";
+  }
+
+  function applyFilter(){
+    const q = $("search").value.trim().toLowerCase();
+    const tf = $("tagFilter").value.trim().toLowerCase();
+
+    let items = [...state.items];
+
+    const sort = $("sort").value;
+    if(sort === "newest") items.sort((a,b) => b.addedAt - a.addedAt);
+    if(sort === "oldest") items.sort((a,b) => a.addedAt - b.addedAt);
+    if(sort === "idAsc") items.sort((a,b) => a.id.localeCompare(b.id));
+    if(sort === "idDesc") items.sort((a,b) => b.id.localeCompare(a.id));
+
+    if(tf){
+      items = items.filter(x => (x.tag || "").toLowerCase() === tf);
+    }
+
+    if(q){
+      items = items.filter(x =>
+        x.id.toLowerCase().includes(q) ||
+        (x.tag || "").toLowerCase().includes(q)
+      );
+    }
+
+    state.filtered = items;
+
+    // clean selected ids not present anymore
+    const present = new Set(state.items.map(x => x.id));
+    for(const id of [...state.selected]){
+      if(!present.has(id)) state.selected.delete(id);
+    }
+  }
+
+  function render(){
+    rebuildTagFilter();
+    applyFilter();
+
+    $("savedCount").textContent = String(state.items.length);
+
+    const tb = $("tbody");
+    tb.innerHTML = "";
+
+    const allVisibleIds = state.filtered.map(x => x.id);
+    const allSelectedVisible = allVisibleIds.length > 0 && allVisibleIds.every(id => state.selected.has(id));
+    $("selectAll").checked = allSelectedVisible;
+
+    if(state.filtered.length === 0){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="5" class="muted">No matching items.</td>`;
+      tb.appendChild(tr);
+      updateBulkButtons();
+      return;
+    }
+
+    for(const item of state.filtered){
+      const checked = state.selected.has(item.id);
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>
+          <input class="chk rowChk" type="checkbox" data-id="${escapeAttr(item.id)}" ${checked ? "checked" : ""} />
+        </td>
+        <td>${escapeHtml(item.id)}</td>
+        <td>${item.tag ? `<span class="tag">${escapeHtml(item.tag)}</span>` : `<span class="muted">—</span>`}</td>
+        <td class="muted">${escapeHtml(fmtTime(item.addedAt))}</td>
+        <td>
+          <div class="actions">
+            <button class="small" data-act="copy" data-id="${escapeAttr(item.id)}">Copy</button>
+            <button class="small" data-act="del" data-id="${escapeAttr(item.id)}">Del</button>
+          </div>
+        </td>
+      `;
+      tb.appendChild(tr);
+    }
+
+    updateBulkButtons();
+  }
+
+  function updateBulkButtons(){
+    const selCount = state.selected.size;
+    $("copySelectedBtn").disabled = selCount === 0;
+    $("deleteSelectedBtn").disabled = selCount === 0;
+  }
+
+  // FIXED: Correct Added / Dupes counts
   function processInput(){
     const input = $("input").value;
     const lines = normalizeLines(input);
@@ -322,14 +389,13 @@
     const tag = $("tag").value.trim();
 
     let rejected = 0;
-    let dupes = 0;
+    let dupes_in_input = 0;
+    let dupes_existing = 0;
+    let added = 0;
 
-    // Existing IDs set
     const existing = new Set(state.items.map(x => x.id));
-
-    // Normalize & validate
-    const cleaned = [];
     const seen = new Set();
+    const cleaned = [];
 
     for(const raw of lines){
       const id = raw.replace(/\s+/g, "");
@@ -338,27 +404,27 @@
         continue;
       }
       if(seen.has(id)){
-        dupes++;
+        dupes_in_input++;
         continue;
       }
       seen.add(id);
       cleaned.push(id);
     }
 
-    // Insert, skipping existing
     for(const id of cleaned){
       if(existing.has(id)){
-        dupes++;
+        dupes_existing++;
         continue;
       }
       state.items.push({ id, tag: tag || "", addedAt: Date.now() });
       existing.add(id);
+      added++;
     }
 
     save();
     $("rejectedCount").textContent = String(rejected);
-    $("dupeCount").textContent = String(dupes);
-    toast(`Added: ${cleaned.length - (dupes)} | Rejected: ${rejected} | Dupes: ${dupes}`);
+    $("dupeCount").textContent = String(dupes_in_input + dupes_existing);
+    toast(`Added: ${added} | Rejected: ${rejected} | Dupes: ${dupes_in_input + dupes_existing}`);
     render();
   }
 
@@ -394,6 +460,14 @@
     toast("Copied visible IDs");
   }
 
+  async function copySelected(){
+    const items = state.items.filter(x => state.selected.has(x.id));
+    const txt = items.map(x => x.id).join("\n");
+    if(!txt){ toast("Nothing selected"); return; }
+    await navigator.clipboard.writeText(txt);
+    toast(`Copied ${items.length} selected`);
+  }
+
   async function copyOne(id){
     await navigator.clipboard.writeText(id);
     toast("Copied");
@@ -401,13 +475,29 @@
 
   function delOne(id){
     state.items = state.items.filter(x => x.id !== id);
+    state.selected.delete(id);
     save();
     render();
     toast("Deleted");
   }
 
+  function delSelected(){
+    const n = state.selected.size;
+    if(n === 0) return;
+
+    if(!confirm(`Delete ${n} selected item(s)?`)) return;
+
+    state.items = state.items.filter(x => !state.selected.has(x.id));
+    state.selected.clear();
+    save();
+    render();
+    toast(`Deleted ${n} selected`);
+  }
+
   function wipeAll(){
+    if(!confirm("Wipe ALL saved items? This cannot be undone.")) return;
     state.items = [];
+    state.selected.clear();
     save();
     $("rejectedCount").textContent = "0";
     $("dupeCount").textContent = "0";
@@ -417,7 +507,7 @@
 
   function backup(){
     const data = {
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       items: state.items
     };
@@ -431,7 +521,7 @@
         const parsed = JSON.parse(String(reader.result || ""));
         const items = parsed?.items;
         if(!Array.isArray(items)) throw new Error("Invalid backup format");
-        // basic sanitize
+
         const safe = [];
         const seen = new Set();
         for(const it of items){
@@ -445,12 +535,25 @@
           });
         }
         state.items = safe;
+        state.selected.clear();
         save();
         render();
         toast("Restored backup");
       }catch(e){
         toast("Restore failed (bad file)");
       }
+    };
+    reader.readAsText(file);
+  }
+
+  function importFromFile(file){
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result || "");
+      // CSV friendly: treat commas as newlines
+      const normalized = text.replaceAll(",", "\n");
+      $("input").value = normalized;
+      toast("Imported into input");
     };
     reader.readAsText(file);
   }
@@ -473,20 +576,51 @@
 
   $("search").addEventListener("input", render);
   $("sort").addEventListener("change", render);
-  $("clearFilterBtn").addEventListener("click", () => { $("search").value=""; $("sort").value="newest"; render(); });
+  $("tagFilter").addEventListener("change", render);
+
+  $("clearFilterBtn").addEventListener("click", () => {
+    $("search").value="";
+    $("tagFilter").value="";
+    $("sort").value="newest";
+    render();
+  });
 
   $("copyBtn").addEventListener("click", copyVisible);
+  $("copySelectedBtn").addEventListener("click", copySelected);
+  $("deleteSelectedBtn").addEventListener("click", delSelected);
   $("exportTxtBtn").addEventListener("click", exportTxt);
   $("exportCsvBtn").addEventListener("click", exportCsv);
 
   $("tbody").addEventListener("click", (e) => {
     const btn = e.target.closest("button");
-    if(!btn) return;
-    const act = btn.getAttribute("data-act");
-    const id = btn.getAttribute("data-id");
-    if(!act || !id) return;
-    if(act === "copy") copyOne(id);
-    if(act === "del") delOne(id);
+    if(btn){
+      const act = btn.getAttribute("data-act");
+      const id = btn.getAttribute("data-id");
+      if(act === "copy" && id) copyOne(id);
+      if(act === "del" && id) delOne(id);
+      return;
+    }
+
+    const chk = e.target.closest(".rowChk");
+    if(chk){
+      const id = chk.getAttribute("data-id");
+      if(!id) return;
+      if(chk.checked) state.selected.add(id);
+      else state.selected.delete(id);
+      updateBulkButtons();
+      // keep selectAll accurate
+      const allVisibleIds = state.filtered.map(x => x.id);
+      $("selectAll").checked = allVisibleIds.length > 0 && allVisibleIds.every(x => state.selected.has(x));
+    }
+  });
+
+  $("selectAll").addEventListener("change", (e) => {
+    const checked = e.target.checked;
+    for(const item of state.filtered){
+      if(checked) state.selected.add(item.id);
+      else state.selected.delete(item.id);
+    }
+    render();
   });
 
   $("themeBtn").addEventListener("click", () => { toggleTheme(); toast("Theme changed"); });
@@ -497,6 +631,26 @@
     const file = e.target.files?.[0];
     if(file) restoreFromFile(file);
     e.target.value = "";
+  });
+
+  $("importBtn").addEventListener("click", () => $("importFile").click());
+  $("importFile").addEventListener("change", (e) => {
+    const file = e.target.files?.[0];
+    if(file) importFromFile(file);
+    e.target.value = "";
+  });
+
+  // Keyboard shortcuts
+  document.addEventListener("keydown", (e) => {
+    if((e.ctrlKey || e.metaKey) && e.key === "Enter"){
+      e.preventDefault();
+      processInput();
+    }
+    if(e.key === "Escape"){
+      $("search").value="";
+      $("tagFilter").value="";
+      render();
+    }
   });
 
   // init

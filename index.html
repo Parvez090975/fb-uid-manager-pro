@@ -5,61 +5,213 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FB UID Manager Pro</title>
     <style>
-        /* Dark Theme Setup */
-        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; padding: 15px; margin: 0; }
-        .container { width: 100%; max-width: 600px; background: #1e1e1e; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.8); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         
-        h3 { margin: 0 0 15px 0; color: #4267B2; text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        body { 
+            background-color: #121212; 
+            color: #e0e0e0; 
+            font-family: 'Segoe UI', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding: 15px; 
+            min-height: 100vh;
+        }
+        
+        .container { 
+            width: 100%; 
+            max-width: 600px; 
+            background: #1e1e1e; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8); 
+        }
+        
+        h3 { 
+            margin: 0 0 20px 0; 
+            color: #4267B2; 
+            text-align: center; 
+            border-bottom: 2px solid #333; 
+            padding-bottom: 10px; 
+            font-size: 24px;
+        }
 
-        /* Input Box */
-        textarea { width: 100%; height: 100px; background: #252525; border: 1px solid #333; color: #fff; padding: 10px; outline: none; border-radius: 6px; font-family: monospace; font-size: 13px; resize: vertical; }
+        textarea { 
+            width: 100%; 
+            height: 120px; 
+            background: #252525; 
+            border: 1px solid #444; 
+            color: #fff; 
+            padding: 12px; 
+            outline: none; 
+            border-radius: 6px; 
+            font-family: monospace; 
+            font-size: 13px; 
+            resize: vertical;
+            transition: border 0.3s;
+        }
         
-        /* Controls */
-        .controls { margin-top: 10px; display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
-        .main-btn { padding: 10px; border: none; cursor: pointer; font-weight: bold; border-radius: 5px; color: white; transition: 0.2s; }
+        textarea:focus { border-color: #4267B2; }
+        
+        .controls { 
+            margin-top: 15px; 
+            display: grid; 
+            grid-template-columns: 1fr 2fr; 
+            gap: 10px; 
+        }
+        
+        .main-btn { 
+            padding: 12px; 
+            border: none; 
+            cursor: pointer; 
+            font-weight: bold; 
+            border-radius: 6px; 
+            color: white; 
+            transition: 0.3s; 
+            font-size: 14px;
+        }
+        
         .btn-clear { background: #d32f2f; }
+        .btn-clear:hover { background: #b71c1c; }
+        
         .btn-process { background: #1976D2; }
+        .btn-process:hover { background: #1565c0; }
 
-        /* Save & Download Area */
-        .save-bar { margin-top: 15px; background: #222; padding: 10px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
-        .btn-download { background: #ff9800; color: #000; border: none; padding: 8px 15px; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        .save-bar { 
+            margin-top: 15px; 
+            background: #222; 
+            padding: 12px; 
+            border-radius: 6px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            border: 1px solid #333; 
+        }
         
-        /* List Area */
-        .result-container { margin-top: 15px; height: 450px; overflow-y: auto; border: 1px solid #333; background: #121212; border-radius: 6px; }
+        .btn-download { 
+            background: #ff9800; 
+            color: #000; 
+            border: none; 
+            padding: 10px 18px; 
+            border-radius: 5px; 
+            font-weight: bold; 
+            cursor: pointer;
+            transition: 0.3s;
+        }
         
-        /* Row Items */
-        .result-row { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px; border-bottom: 1px solid #2a2a2a; }
+        .btn-download:hover { background: #f57c00; }
+        
+        .result-container { 
+            margin-top: 15px; 
+            height: 450px; 
+            overflow-y: auto; 
+            border: 1px solid #333; 
+            background: #121212; 
+            border-radius: 6px; 
+        }
+        
+        .result-row { 
+            display: grid; 
+            grid-template-columns: 1fr auto; 
+            gap: 10px; 
+            align-items: center; 
+            padding: 12px; 
+            border-bottom: 1px solid #2a2a2a; 
+            transition: background 0.2s;
+        }
+        
         .result-row:hover { background: #1a1a1a; }
 
-        /* UID Link & Visited Style */
         .info-part { display: flex; flex-direction: column; }
-        .uid-link { color: #64b5f6; text-decoration: none; font-weight: bold; font-family: monospace; font-size: 14px; }
-        .uid-link:hover { text-decoration: underline; }
         
-        /* Click korle color change hobe */
-        .uid-link.visited { color: #555 !important; text-decoration: line-through !important; opacity: 0.5; }
+        .uid-link { 
+            color: #64b5f6; 
+            text-decoration: none; 
+            font-weight: bold; 
+            font-family: monospace; 
+            font-size: 14px;
+            transition: 0.2s;
+        }
         
-        .pass-display { font-size: 11px; color: #888; margin-top: 3px; font-family: monospace; }
+        .uid-link:hover { 
+            text-decoration: underline;
+            color: #90caf9;
+        }
+        
+        .uid-link.visited { 
+            color: #666 !important; 
+            text-decoration: line-through !important; 
+            opacity: 0.6;
+        }
+        
+        .pass-display { 
+            font-size: 12px; 
+            color: #999; 
+            margin-top: 4px; 
+            font-family: monospace;
+        }
 
-        /* Action Buttons */
-        .btn-group { display: flex; gap: 5px; }
-        .mini-btn { border: 1px solid #444; background: #333; color: #ccc; padding: 5px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; }
-        .mini-btn:hover { background: #444; }
+        .btn-group { 
+            display: flex; 
+            gap: 6px; 
+            flex-wrap: wrap;
+        }
         
-        /* Save Button Green */
-        .btn-save { background: #2e7d32; border-color: #2e7d32; color: white; }
-        .btn-save:hover { background: #1b5e20; }
-        .btn-save:disabled { background: #1b5e20; opacity: 0.5; cursor: default; }
+        .mini-btn { 
+            border: 1px solid #444; 
+            background: #333; 
+            color: #ccc; 
+            padding: 6px 10px; 
+            font-size: 11px; 
+            cursor: pointer; 
+            border-radius: 4px;
+            transition: 0.2s;
+        }
+        
+        .mini-btn:hover { 
+            background: #444;
+            color: #fff;
+        }
+        
+        .btn-save { 
+            background: #2e7d32; 
+            border-color: #2e7d32; 
+            color: white; 
+        }
+        
+        .btn-save:hover { 
+            background: #1b5e20; 
+        }
+        
+        .btn-save:disabled { 
+            background: #1b5e20; 
+            opacity: 0.5; 
+            cursor: default; 
+        }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        #count {
+            color: #00e676;
+            font-size: 18px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h3>FB UID Check & Save</h3>
+    <h3>FB UID Manager Pro</h3>
     
     <textarea id="inputData" placeholder="Paste UID|PASS here..."></textarea>
 
@@ -69,84 +221,80 @@
     </div>
 
     <div class="save-bar">
-        <span style="color: #ccc; font-size: 13px;">Saved: <b id="count" style="color: #00e676; font-size: 16px;">0</b></span>
-        <button class="btn-download" onclick="downloadFile()"> Download .txt</button>
+        <span style="color: #ccc; font-size: 14px;">Saved: <b id="count">0</b></span>
+        <button class="btn-download" onclick="downloadFile()">Download .txt</button>
     </div>
 
-    <div class="result-container" id="list"></div>
+    <div class="result-container" id="list">
+        <div class="empty-message">Paste UID|PASS and click Process List</div>
+    </div>
 </div>
 
 <script>
     let savedList = [];
 
-    // Clear function
     function clearAll() {
         if(confirm("Clear all data?")) {
             document.getElementById('inputData').value = '';
-            document.getElementById('list').innerHTML = '';
+            document.getElementById('list').innerHTML = '<div class="empty-message">Paste UID|PASS and click Process List</div>';
             savedList = [];
             document.getElementById('count').innerText = '0';
         }
     }
 
-    // Process List
     function processList() {
         const raw = document.getElementById('inputData').value;
         const listDiv = document.getElementById('list');
         listDiv.innerHTML = '';
-        savedList = []; // Reset saved on new process
+        savedList = [];
         document.getElementById('count').innerText = '0';
 
-        if(!raw.trim()) return alert("Box empty!");
+        if(!raw.trim()) {
+            alert("Box empty!");
+            return;
+        }
 
         const lines = raw.split('\n');
+        let count = 0;
+        
         lines.forEach(line => {
             if(line.trim()) {
                 let parts = line.split('|');
                 let uid = parts[0].trim();
                 let pass = parts.length > 1 ? parts[1].trim() : '';
 
-                if(/\^\d+\$/.test(uid)) {
+                if(/^\d+$/.test(uid)) {
                     addRow(uid, pass);
+                    count++;
                 }
             }
         });
+
+        if(count === 0) {
+            listDiv.innerHTML = '<div class="empty-message">No valid UIDs found</div>';
+        }
     }
 
-    // Add Row Function
     function addRow(uid, pass) {
         const listDiv = document.getElementById('list');
         const div = document.createElement('div');
         div.className = 'result-row';
 
-        let passShow = pass ? `<div class="pass-display">Pw: ${pass}</div>` : '';
-        let fullData = pass ? `${uid}|${pass}` : uid;
+        let passShow = pass ? '<div class="pass-display">Pw: ' + pass + '</div>' : '';
+        let fullData = pass ? uid + '|' + pass : uid;
         
-        // Buttons HTML
-        let passBtn = pass ? `<button class="mini-btn" onclick="copyText('${pass}', this)">Copy Pass</button>` : '';
+        let passBtn = pass ? '<button class="mini-btn" onclick="copyText(\'' + pass + '\', this)">Copy Pass</button>' : '';
 
-        div.innerHTML = `
-            <div class="info-part">
-                <a href="https://www.facebook.com/${uid}" target="_blank" class="uid-link" onclick="markVisited(this)">
-                    ${uid}
-                </a>
-                ${passShow}
-            </div>
-            <div class="btn-group">
-                <button class="mini-btn" onclick="copyText('${uid}', this)">Copy UID</button>
-                ${passBtn}
-                <button class="mini-btn btn-save" onclick="saveID('${fullData}', this)">Save</button>
-            </div>
-        `;
+        div.innerHTML = '<div class="info-part"><a href="https://www.facebook.com/' + uid + '" target="_blank" class="uid-link" onclick="markVisited(this)">' + uid + '</a>' + passShow + '</div><div class="btn-group"><button class="mini-btn" onclick="copyText(\'' + uid + '\', this)">Copy UID</button>' + passBtn + '<button class="mini-btn btn-save" onclick="saveID(\'' + fullData + '\', this)">Save</button></div>';
+        
         listDiv.appendChild(div);
     }
 
-    // Mark as visited (Grey + Cut line)
     function markVisited(el) {
         el.classList.add('visited');
+        return true;
     }
 
-    // Copy Text
     function copyText(txt, btn) {
         navigator.clipboard.writeText(txt).then(() => {
             let oldText = btn.innerText;
@@ -155,23 +303,24 @@
             setTimeout(() => { 
                 btn.innerText = oldText; 
                 btn.style.color = "";
-            }, 1000);
+            }, 1500);
         });
     }
 
-    // Save ID Function
     function saveID(data, btn) {
         savedList.push(data);
         document.getElementById('count').innerText = savedList.length;
         
-        // Visual Change
         btn.innerText = "Saved";
         btn.disabled = true;
+        btn.style.opacity = "0.6";
     }
 
-    // Download Function
     function downloadFile() {
-        if(savedList.length === 0) return alert("Nothing saved yet!");
+        if(savedList.length === 0) {
+            alert("Nothing saved yet!");
+            return;
+        }
         
         let content = savedList.join('\n');
         let blob = new Blob([content], {type: "text/plain"});
